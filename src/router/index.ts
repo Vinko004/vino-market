@@ -12,7 +12,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/vina',
     name: 'Vina',
     component: Vina,
-  }
+  },
 ]
 
 const router = createRouter({

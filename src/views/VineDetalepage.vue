@@ -1,11 +1,20 @@
 <template>
   <v-container class="py-6">
-    <!-- Pretraga (uvijek vidljiva) -->
+    <!-- Gumb Dodaj vino -->
+    <v-row justify="end" class="mb-4">
+      <v-col cols="auto">
+        <v-btn color="success" @click="openAddWineDialog" dark>
+          Dodaj vino
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <!-- Pretraga -->
     <v-row class="mb-4" align="center" justify="start" dense>
       <v-col cols="12" md="6">
         <v-text-field
           v-model="search"
-          label="Pretraži vino ili vinariju"
+          label="Pretraži vino"
           prepend-inner-icon="mdi-magnify"
           clearable
           dense
@@ -14,7 +23,7 @@
       </v-col>
     </v-row>
 
-    <!-- Gumbi za prikaz filtera i brisanje -->
+    <!-- Filteri -->
     <v-row class="mb-4" align="center" justify="start" dense>
       <v-col cols="auto">
         <v-btn color="primary" @click="showFilters = !showFilters" depressed>
@@ -28,15 +37,15 @@
       </v-col>
     </v-row>
 
-    <!-- Filter card (bez pretrage) -->
+    <!-- Filter polja -->
     <v-expand-transition>
       <v-card v-if="showFilters" class="mb-6 pa-4" elevation="3" max-width="900">
         <v-row dense>
           <v-col cols="12" md="4">
             <v-select
-              v-model="selectedLocation"
-              :items="locations"
-              label="Filtriraj po lokaciji"
+              v-model="selectedCountry"
+              :items="countries"
+              label="Filtriraj po zemlji porijekla"
               clearable
               dense
               outlined
@@ -45,9 +54,9 @@
 
           <v-col cols="12" md="4">
             <v-select
-              v-model="selectedRating"
-              :items="ratings"
-              label="Filtriraj po ocjeni"
+              v-model="selectedCategory"
+              :items="categories"
+              label="Filtriraj po kategoriji"
               clearable
               dense
               outlined
@@ -56,12 +65,17 @@
 
           <v-col cols="12" md="4">
             <v-select
-              v-model="selectedWinery"
-              :items="wineries"
-              label="Filtriraj po vinariji"
+              v-model="sortByPrice"
+              :items="[
+                { text: 'Najniža cijena', value: 'lowest' },
+                { text: 'Najviša cijena', value: 'highest' }
+              ]"
+              label="Sortiraj po cijeni"
               clearable
               dense
               outlined
+              item-title="text"
+              item-value="value"
             />
           </v-col>
         </v-row>
@@ -92,46 +106,14 @@
           lg="4"
           class="d-flex"
         >
-          <v-card
-            max-width="500"
-            class="mx-auto wine-card"
-            elevation="5"
-            rounded
-          >
-            <v-img
-              v-if="wine.image"
-              :src="wine.image"
-              height="250"
-              class="white--text align-end"
-            >
-              <v-sheet
-                class="pa-3"
-                color="rgba(0, 0, 0, 0.6)"
-                style="backdrop-filter: blur(5px);"
-                elevation="0"
-              >
-                <div class="text-h5 font-weight-bold">{{ wine.wine }}</div>
-                <div class="subtitle-2">{{ wine.winery }}</div>
-              </v-sheet>
-            </v-img>
-
-            <v-card-title v-else>{{ wine.wine }}</v-card-title>
+          <v-card max-width="500" class="mx-auto wine-card" elevation="5" rounded>
+            <v-card-title>{{ wine.naziv }}</v-card-title>
 
             <v-card-text class="py-4">
-              <v-row>
-                <v-col cols="6">
-                  <v-icon left color="amber darken-2">mdi-star</v-icon>
-                  <strong>Ocjena:</strong> {{ wine.rating.average }}
-                </v-col>
-                <v-col cols="6">
-                  <v-icon left color="grey darken-1">mdi-map-marker</v-icon>
-                  <strong>Lokacija:</strong> {{ wine.location }}
-                </v-col>
-              </v-row>
-
-              <p class="mt-3 text-body-1">
-                Elegantno vino s bogatim okusom i ugodnim mirisom.
-              </p>
+              <p><strong>Opis:</strong> {{ wine.opis }}</p>
+              <p><strong>Cijena:</strong> {{ parseFloat(wine.cijena).toFixed(2) }} €</p>
+              <p><strong>Zemlja porijekla:</strong> {{ wine.zemlja_porijekla }}</p>
+              <p><strong>Kategorija:</strong> {{ getCategoryName(wine.kategorija_id) }}</p>
             </v-card-text>
 
             <v-card-actions>
@@ -145,7 +127,7 @@
       </template>
     </v-row>
 
-    <!-- Pagination -->
+    <!-- Paginacija -->
     <v-row justify="center" class="mt-6">
       <v-pagination
         v-model="page"
@@ -156,16 +138,11 @@
       />
     </v-row>
 
-    <!-- Dialog za detalje vina -->
-    <v-dialog
-      v-model="dialog"
-      max-width="800"
-      persistent
-      scrollable
-    >
+    <!-- Dialog detalji -->
+    <v-dialog v-model="dialog" max-width="800" persistent scrollable>
       <v-card>
         <v-toolbar flat color="primary" dark>
-          <v-toolbar-title>{{ selectedWine?.wine }}</v-toolbar-title>
+          <v-toolbar-title>{{ selectedWine?.naziv }}</v-toolbar-title>
           <v-spacer />
           <v-btn icon @click="dialog = false">
             <v-icon>mdi-close</v-icon>
@@ -173,30 +150,77 @@
         </v-toolbar>
 
         <v-card-text>
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-img
-                v-if="selectedWine?.image"
-                :src="selectedWine.image"
-                height="350"
-                contain
-              />
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <h3>{{ selectedWine?.winery }}</h3>
-              <p><strong>Lokacija:</strong> {{ selectedWine?.location }}</p>
-              <p><strong>Ocjena:</strong> {{ selectedWine?.rating.average }} ({{ selectedWine?.rating.reviews }} recenzija)</p>
-              <p>
-                Ovdje možeš dodati detaljniji opis vina, povijest, okus, preporuke i druge informacije.
-              </p>
-            </v-col>
-          </v-row>
+          <p><strong>Opis:</strong> {{ selectedWine?.opis }}</p>
+          <p><strong>Cijena:</strong> {{ parseFloat(selectedWine?.cijena || '0').toFixed(2) }} €</p>
+          <p><strong>Zemlja porijekla:</strong> {{ selectedWine?.zemlja_porijekla }}</p>
+          <p><strong>Kategorija:</strong> {{ getCategoryName(selectedWine?.kategorija_id) }}</p>
         </v-card-text>
 
         <v-card-actions>
           <v-spacer />
           <v-btn color="primary" text @click="dialog = false">Zatvori</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog za dodavanje novog vina -->
+    <v-dialog v-model="addDialog" max-width="600px" persistent>
+      <v-card>
+        <v-toolbar flat color="success" dark>
+          <v-toolbar-title>Dodaj novo vino</v-toolbar-title>
+          <v-spacer />
+          <v-btn icon @click="addDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-toolbar>
+
+        <v-card-text>
+          <v-form ref="addWineForm" v-model="valid" lazy-validation>
+            <v-text-field
+              v-model="newWine.naziv"
+              label="Naziv"
+              :rules="[v => !!v || 'Naziv je obavezan']"
+              required
+            />
+            <v-textarea
+              v-model="newWine.opis"
+              label="Opis"
+              :rules="[v => !!v || 'Opis je obavezan']"
+              required
+              rows="3"
+            />
+            <v-text-field
+              v-model="newWine.cijena"
+              label="Cijena (€)"
+              type="number"
+              min="0"
+              :rules="[v => !!v && parseFloat(v) >= 0 || 'Unesite ispravnu cijenu']"
+              required
+            />
+            <v-text-field
+              v-model="newWine.zemlja_porijekla"
+              label="Zemlja porijekla"
+              :rules="[v => !!v || 'Zemlja je obavezna']"
+              required
+            />
+<v-select
+  v-model="newWine.kategorija_id"
+  :items="categories"
+  label="Kategorija"
+  clearable
+  dense
+  outlined
+  item-title="text"
+  item-value="value"
+/>
+
+          </v-form>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="success" :disabled="!valid" @click="submitNewWine">Spremi</v-btn>
+          <v-btn text @click="addDialog = false">Odustani</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -209,46 +233,65 @@ import api from '@/services/api'
 
 interface Wine {
   id: number
-  wine: string
-  winery: string
-  rating: {
-    average: string
-    reviews: string
-  }
-  location: string
-  image?: string
+  naziv: string
+  opis: string
+  cijena: string
+  kategorija_id: number
+  zemlja_porijekla: string
+}
+
+const categoryMap: Record<number, string> = {
+  1: 'Crveno',
+  2: 'Bijelo',
+  3: 'Rose',
+  4: 'Pjenušavo',
+}
+
+function getCategoryName(id: number | undefined): string {
+  if (!id) return 'Nepoznata kategorija'
+  return categoryMap[id] || 'Nepoznata kategorija'
 }
 
 const wines = ref<Wine[]>([])
 const search = ref('')
-const selectedLocation = ref<string | null>(null)
-const selectedRating = ref<string | null>(null)
-const selectedWinery = ref<string | null>(null)
+const selectedCountry = ref<string | null>(null)
+const selectedCategory = ref<string | null>(null)
+const sortByPrice = ref<string | null>(null)
 const page = ref(1)
 const perPage = 6
 const loading = ref(true)
 const showFilters = ref(false)
 
-const locations = ref<string[]>([])
-const ratings = ref<string[]>([])
-const wineries = ref<string[]>([])
+const countries = ref<string[]>([])
+const categories = ref<string[]>(Object.values(categoryMap))
 
 const dialog = ref(false)
 const selectedWine = ref<Wine | null>(null)
 
+// Dodavanje novog vina
+const addDialog = ref(false)
+const valid = ref(false)
+const addWineForm = ref(null)
+const newWine = ref({
+  naziv: '',
+  opis: '',
+  cijena: '',
+  zemlja_porijekla: '',
+  kategorija_id: null as number | null,
+})
+
+const categoryItems = [
+  { text: 'Crveno', value: 1 },
+  { text: 'Bijelo', value: 2 },
+  { text: 'Rose', value: 3 },
+  { text: 'Pjenušavo', value: 4 },
+]
+
 onMounted(async () => {
   try {
-    const response = await api.get('/reds')
+    const response = await api.get('/vina')
     wines.value = response.data
-
-    const locSet = new Set(wines.value.map(w => w.location).filter(Boolean))
-    locations.value = Array.from(locSet)
-
-    const winerySet = new Set(wines.value.map(w => w.winery).filter(Boolean))
-    wineries.value = Array.from(winerySet)
-
-    const ratingSet = new Set(wines.value.map(w => w.rating.average).filter(Boolean))
-    ratings.value = Array.from(ratingSet).sort((a, b) => Number(b) - Number(a))
+    countries.value = Array.from(new Set(wines.value.map(w => w.zemlja_porijekla).filter(Boolean)))
   } catch (error) {
     console.error('Greška prilikom dohvaćanja vina:', error)
   } finally {
@@ -257,32 +300,40 @@ onMounted(async () => {
 })
 
 const filteredWines = computed(() => {
-  return wines.value.filter(w => {
-    const matchesSearch =
-      w.wine.toLowerCase().includes(search.value.toLowerCase()) ||
-      w.winery.toLowerCase().includes(search.value.toLowerCase())
+  let result = wines.value.filter(w => {
+    const naziv = w.naziv.toLowerCase().trim()
+    const country = w.zemlja_porijekla?.toLowerCase().trim() || ''
 
-    const matchesLocation =
-      !selectedLocation.value || w.location === selectedLocation.value
+    const searchLower = search.value.toLowerCase().trim()
+    const selectedCountryLower = selectedCountry.value?.toLowerCase().trim() || null
+    const selectedCategoryLower = selectedCategory.value?.toLowerCase().trim() || null
 
-    const matchesRating =
-      !selectedRating.value || w.rating.average === selectedRating.value
+    const categoryName = getCategoryName(w.kategorija_id).toLowerCase()
 
-    const matchesWinery =
-      !selectedWinery.value || w.winery === selectedWinery.value
+    const matchesSearch = naziv.includes(searchLower)
+    const matchesCountry = !selectedCountryLower || country === selectedCountryLower
+    const matchesCategory = !selectedCategoryLower || categoryName === selectedCategoryLower
 
-    return matchesSearch && matchesLocation && matchesRating && matchesWinery
+    return matchesSearch && matchesCountry && matchesCategory
   })
+
+  if (sortByPrice.value === 'lowest') {
+    result = result.slice().sort((a, b) => parseFloat(a.cijena) - parseFloat(b.cijena))
+  } else if (sortByPrice.value === 'highest') {
+    result = result.slice().sort((a, b) => parseFloat(b.cijena) - parseFloat(a.cijena))
+  }
+
+  return result
 })
 
-watch([search, selectedLocation, selectedRating, selectedWinery], () => {
+watch([search, selectedCountry, selectedCategory, sortByPrice], () => {
   page.value = 1
 })
 
 function resetFilters() {
-  selectedLocation.value = null
-  selectedRating.value = null
-  selectedWinery.value = null
+  selectedCountry.value = null
+  selectedCategory.value = null
+  sortByPrice.value = null
   showFilters.value = false
 }
 
@@ -293,26 +344,57 @@ const pagedWines = computed(() => {
   return filteredWines.value.slice(start, start + perPage)
 })
 
-function alert(name: string) {
-  window.alert(`Više o vinu: ${name}`)
-}
-
 function openWineDetails(wine: Wine) {
   selectedWine.value = wine
   dialog.value = true
 }
+
+function openAddWineDialog() {
+  newWine.value = {
+    naziv: '',
+    opis: '',
+    cijena: '',
+    zemlja_porijekla: '',
+    kategorija_id: null,
+  }
+  valid.value = false
+  addDialog.value = true
+}
+
+async function submitNewWine() {
+  if (addWineForm.value) {
+    const isValid = await addWineForm.value.validate()
+    if (!isValid) return
+  }
+
+  try {
+    await api.post('/vina', {
+      naziv: newWine.value.naziv,
+      opis: newWine.value.opis,
+      cijena: newWine.value.cijena,
+        zemlja_porijekla: newWine.value.zemlja_porijekla,
+        kategorija_id: newWine.value.kategorija_id,
+      })
+
+      loading.value = true
+      const response = await api.get('/vina')
+      wines.value = response.data
+      countries.value = Array.from(new Set(wines.value.map(w => w.zemlja_porijekla).filter(Boolean)))
+      addDialog.value = false
+    } catch (error) {
+      console.error('Greška pri dodavanju vina:', error)
+      alert('Došlo je do greške prilikom dodavanja vina.')
+    } finally {
+      loading.value = false
+    }
+  }
 </script>
 
 <style scoped>
 .wine-card {
   width: 500px;
-  height: 400px;
+  height: auto;
   display: flex;
   flex-direction: column;
-}
-
-.wine-card > .v-card-text {
-  flex-grow: 1;
-  overflow: hidden;
 }
 </style>

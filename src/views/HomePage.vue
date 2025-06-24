@@ -28,8 +28,7 @@
 import { ref, onMounted, computed } from 'vue'
 import api from '@/services/api'
 
-interface Wine {
-  id: number
+interface Wine {id: number
   wine: string
   winery: string
   rating: {
