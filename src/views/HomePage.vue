@@ -59,20 +59,20 @@
       </v-container>
       <div style="background-color: #1e1e1e; color: #f5f5dc; padding: 60px 0">
         <v-container class="px-8 px-md-10">
-          <v-row class="footer-section d-flex flex-wrap flex-column flex-md-row justify-between">
+          <v-row class="footer-section flex-wrap justify-between">
             <v-col cols="12" md="6" class="footer-contact mb-6 mb-md-0">
               <h3 class="text-h5 font-weight-bold mb-4">
                 📬 Kontakt informacije
               </h3>
-              <div class="d-flex align-center mb-2">
+              <div class="footer-contact mb-6 mb-md-0">
                 <v-icon class="mr-2" color="white">mdi-email</v-icon>
                 <span>info@vinogradsunca.ba</span>
               </div>
-              <div class="d-flex align-center mb-2">
+              <div class="footer-contact mb-6 mb-md-0">
                 <v-icon class="mr-2" color="white">mdi-phone</v-icon>
                 <span>+387 63 725 088</span>
               </div>
-              <div class="d-flex align-center">
+              <div class="footer-contact mb-6 mb-md-0">
                 <v-icon class="mr-2" color="white">mdi-map-marker</v-icon>
                 <span>Služanj 139, 88260 Čitluk</span>
               </div>
@@ -81,7 +81,7 @@
             <v-col
               cols="12"
               md="6"
-              class="footer-hours d-flex flex-column align-end"
+              class="footer-hours d-flex flex-column align-md-end align-center align-md-start"
             >
               <h3 class="text-h5 font-weight-bold mb-4">🕒 Radno vrijeme</h3>
               <div class="d-flex align-center">
@@ -117,6 +117,9 @@ import Logo1 from "@/assets/Logo1.png";
   display: block;
   margin: 0 auto;
 }
+.footer-contact{
+  text-align: center !important;
+}
 
 @media (max-width: 768px) {
   .hero-text h1 {
@@ -128,13 +131,13 @@ import Logo1 from "@/assets/Logo1.png";
   }
 
   .footer-section {
-    text-align: center;
+    text-align: center !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
   .footer-section h3 {
-    text-align: center;
+    text-align: center !important;
   }
 
   .footer-section .v-icon {
@@ -158,5 +161,9 @@ import Logo1 from "@/assets/Logo1.png";
     min-height: auto;
     padding-top: 40px;
   }
+  .v-container {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
 }
 </style>
