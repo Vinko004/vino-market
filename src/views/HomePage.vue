@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- HERO IMAGE SECTION -->
     <v-img
       :src="vinogradImg"
       height="100vh"
@@ -11,10 +12,13 @@
         <h1 class="text-h2 font-weight-bold mb-9">
           Priča koja traje generacijama
         </h1>
-        <v-btn color="success" large elevation="1">Otkrijte naša vina</v-btn>
+        <v-btn color="success" large elevation="1" @click="idiNaVina">
+          Otkrijte naša vina
+        </v-btn>
       </div>
     </v-img>
 
+    <!-- MAIN CONTENT SECTION -->
     <div style="background-color: #fdfcf9; width: 100%">
       <v-container class="py-16">
         <v-row align="center">
@@ -33,7 +37,9 @@
               hercegovačke sorte žilavku i blatinu, kao i internacionalne sorte
               syrah i cabernet sauvignon.
             </p>
-            <v-btn variant="outlined" class="mt-6">Otkrijte naša vina</v-btn>
+            <v-btn variant="outlined" class="mt-6" @click="idiNaVina">
+              Otkrijte naša vina
+            </v-btn>
           </v-col>
 
           <v-col
@@ -44,6 +50,8 @@
             <v-img :src="Logo1" max-width="300" contain class="rounded" />
           </v-col>
         </v-row>
+
+        <!-- MOBILE IMAGE -->
         <v-row class="d-flex d-md-none justify-center mt-6">
           <v-col cols="12" class="d-flex justify-center">
             <v-img
@@ -57,6 +65,8 @@
           </v-col>
         </v-row>
       </v-container>
+
+      <!-- FOOTER SECTION -->
       <div style="background-color: #1e1e1e; color: #f5f5dc; padding: 60px 0">
         <v-container class="px-8 px-md-10">
           <v-row class="footer-section flex-wrap justify-between">
@@ -106,6 +116,13 @@
 <script setup lang="ts">
 import vinogradImg from "@/assets/vinograd.webp";
 import Logo1 from "@/assets/Logo1.png";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+function idiNaVina() {
+  router.push("/vina");
+}
 </script>
 
 <style scoped>
@@ -117,7 +134,7 @@ import Logo1 from "@/assets/Logo1.png";
   display: block;
   margin: 0 auto;
 }
-.footer-contact{
+.footer-contact {
   text-align: center !important;
 }
 
@@ -149,6 +166,7 @@ import Logo1 from "@/assets/Logo1.png";
     align-items: center !important;
     text-align: center !important;
   }
+
   .logo-img {
     position: static;
     display: block;
@@ -156,14 +174,16 @@ import Logo1 from "@/assets/Logo1.png";
     width: 250px !important;
     height: auto !important;
   }
+
   .logo-wrapper {
     position: static;
     min-height: auto;
     padding-top: 40px;
   }
+
   .v-container {
-  padding-left: 16px !important;
-  padding-right: 16px !important;
-}
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
 }
 </style>
